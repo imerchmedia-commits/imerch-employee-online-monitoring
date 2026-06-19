@@ -4,61 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iMerch Employee Online Monitoring</title>
+    <!-- Google Fonts Integration -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0f172a;       
-            --primary-light: #1e293b; 
-            --accent: #b45309;        
-            --bg-main: #f8fafc;       
+            --primary: #0f172a;       /* Dark Corporate Slate Blue */
+            --primary-light: #1e293b; /* Accent Deep Blue */
+            --accent: #b45309;        /* Sophisticated Amber/Gold Accent */
+            --bg-main: #f8fafc;       /* Ultra-clean Canvas Background */
             --card-bg: #ffffff;
             --text-dark: #334155;
             --text-muted: #64748b;
-            --success: #059669;       
-            --danger: #dc2626;        
+            --success: #059669;       /* Deep Luxury Green Badge */
+            --danger: #dc2626;        /* Clean Crimson Muted Red Badge */
             --border-color: #f1f5f9;
         }
-        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-dark); }
-        .top-navbar { background-color: var(--primary); color: white; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--accent); }
-        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; }
-        .navbar-brand span { color: #fbbf24; font-style: italic; }
-        .live-status-indicator { display: flex; align-items: center; gap: 8px; font-size: 12px; text-transform: uppercase; font-weight: 600; background: rgba(255,255,255,0.06); padding: 6px 14px; border-radius: 20px; }
-        .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 1.8s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .top-navbar {
+            background-color: var(--primary); color: white; padding: 15px 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-bottom: 3px solid var(--accent);
+        }
+
+        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+        .navbar-brand span { color: #fbbf24; font-style: italic; font-weight: 400; }
+
+        .live-status-indicator {
+            display: flex; align-items: center; gap: 8px; font-size: 12px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+            background: rgba(255,255,255,0.06); padding: 6px 14px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .pulse-dot {
+            width: 8px; height: 8px; background-color: #10b981; border-radius: 50%;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
         .main-content { max-width: 1200px; margin: 40px auto; padding: 0 24px; }
+
         .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 35px; }
-        .kpi-card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(148, 163, 184, 0.05); border: 1px solid #e2e8f0; }
-        .kpi-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px 0; font-weight: 600; }
+        .kpi-card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(148, 163, 184, 0.05); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.25s ease; }
+        .kpi-card:hover { transform: translateY(-3px); }
+        .kpi-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin: 0 0 8px 0; font-weight: 600; }
         .kpi-value { font-size: 32px; font-weight: 700; color: var(--primary); margin: 0; }
-        .controls-card { background: var(--card-bg); border-radius: 12px; padding: 20px 24px; margin-bottom: 25px; border: 1px solid #e2e8f0; display: flex; gap: 20px; }
-        .input-group { flex: 1; }
-        input[type="text"], select { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: var(--text-dark); background-color: #fafafa; box-sizing: border-box; }
-        .table-container { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background-color: var(--primary); color: white; padding: 16px 24px; font-weight: 500; text-transform: uppercase; font-size: 12px; border-bottom: 2px solid var(--accent); }
-        td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+
+        .controls-card {
+            background: var(--card-bg); border-radius: 12px; padding: 20px 24px; margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(148, 163, 184, 0.04); border: 1px solid rgba(226, 232, 240, 0.8);
+            display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+        }
+
+        .input-group { flex: 1; min-width: 280px; position: relative; }
+        input[type="text"], select { 
+            width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 8px; 
+            font-size: 14px; font-family: inherit; color: var(--text-dark); background-color: #fafafa;
+            box-sizing: border-box; transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, select:focus { outline: none; border-color: var(--accent); background-color: white; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.08); }
+
+        .table-container { background: var(--card-bg); box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03); border-radius: 12px; overflow: hidden; border: 1px solid rgba(226, 232, 240, 0.8); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: var(--primary); color: white; padding: 16px 24px; font-weight: 500; text-transform: uppercase; font-size: 12px; letter-spacing: 0.8px; border-bottom: 2px solid var(--accent); }
+        td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-dark); }
         tr:hover td { background-color: #f8fafc; }
+
         .badge-dept { background-color: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; border: 1px solid #e2e8f0; }
-        .supervisor-name { font-weight: 600; color: var(--primary-light); }
-        .counter-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; text-align: center; }
+        .supervisor-name { font-weight: 600; color: var(--primary-light); font-size: 14px; }
+        .counter-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; min-width: 24px; text-align: center; }
         .count-zero { background-color: #fef2f2; color: var(--danger); border: 1px solid #fee2e2; }
         .count-active { background-color: #ecfdf5; color: var(--success); border: 1px solid #d1fae5; }
         .spinner-container { text-align: center; padding: 40px 0; color: var(--text-muted); font-weight: 500; }
     </style>
 </head>
 <body>
+
 <header class="top-navbar">
     <div class="navbar-brand">iMerch <span>Corporate Dashboard</span></div>
-    <div class="live-status-indicator"><div class="pulse-dot"></div>Live Sheet Sync</div>
+    <div class="live-status-indicator"><div class="pulse-dot"></div>Live Realtime Sync</div>
 </header>
+
 <main class="main-content">
     <section class="analytics-grid">
         <div class="kpi-card"><h3 class="kpi-title">Active Supervisors</h3><p class="kpi-value" id="total-supervisors-kpi">-</p></div>
         <div class="kpi-card"><h3 class="kpi-title">Total Handled Candidates</h3><p class="kpi-value" id="total-applicants-kpi" style="color: var(--success);">-</p></div>
-        <div class="kpi-card"><h3 class="kpi-title">Monitored Units</h3><p class="kpi-value" id="total-departments-kpi">9</p></div>
+        <div class="kpi-card"><h3 class="kpi-title">Monitored Groups</h3><p class="kpi-value" id="total-departments-kpi">-</p></div>
     </section>
+
     <div class="controls-card">
         <div class="input-group"><input type="text" id="searchBar" placeholder="Search supervisor name..." onkeyup="filterData()"></div>
         <div class="input-group" style="max-width: 300px;">
@@ -76,69 +123,84 @@
             </select>
         </div>
     </div>
+
     <div class="table-container">
         <table>
-            <thead><tr><th style="width: 30%;">Department / Unit</th><th style="width: 45%;">Supervisor</th><th style="width: 25%; text-align: center;">Applicants</th></tr></thead>
-            <tbody id="table-body"><tr><td colspan="3"><div class="spinner-container">Loading live data from Google Sheet...</div></td></tr></tbody>
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Corporate Department / Unit</th>
+                    <th style="width: 45%;">Supervisor / Coordinator</th>
+                    <th style="width: 20%; text-align: center;">Total Applicants</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa pampublikong Google Sheet database...</div></td></tr>
+            </tbody>
         </table>
     </div>
 </main>
 <script>
+    // AUTOMATED SYSTEM ENGINE DIRECT READ VIA PUBLIC TSV EXPORT FEED
     const SPREADSHEET_ID = "1BnnnVgABrCViTLiYg2A3Qrj-lF13dIgcNvC_YX2RQm4"; 
-    const SHEET_NAME = "Main Data";
-    
-    const SUPERVISOR_MATRIX = {
-        "OPERATIONS": ["JAN PATRICK DAYO EVANGELISTA", "ROXANNE STREBEL FERNANDO", "RONNEL ESPINO GINGCO", "AREM IRISH MALLARI GONZALES", "NILO ANGELO OCAMPO VIADO", "JOSE MARI SAN JUAN HERNANDEZ", "VICTORIA NONETTE LIMPIN CARLOS"],
-        "SBG 2 HEAD / SERTA": ["SARAHBETH PUNDAN PAHATI", "VICTORIA NONETTE LIMPIN CARLOS"],
-        "THE WOW GROUP": ["JULIE ANN BERTIZ JALANDO-ON", "PRINCESS IGNACIO ARNALDO", "JAYSON ATIENZA JUAÑO", "JOSE MARI SAN JUAN HERNANDEZ"],
-        "SBG HEAD 2 / URATEX": ["VICTORIA NONETTE LIMPIN CARLOS", "JEROME ASUNCION ORE", "ALLAN JAMES PEREZ TORLA", "REYCARD NOVEN HERRERA ZABATE", "FERNANDO LAURON BENJAMIN", "VANESSA ENFESTA BENOSA", "CHRISTOPHER GULTIAN BERMUDO", "ALBERTO MIÑUZA CAÑETE", "JAY PADASAS DE LOS SANTOS", "JOHN MARTIN GARINGALAO DE VILLA", "MARK ANTHONY MACARAEG FERRER", "ROWENA JUMALON GUIRIGAY", "JOEMER DIMACALI LEDESMA", "CARLOS CALATIN MAHALIN", "CHITO CUENZA OBEÑA", "ALLAN PAUL BAUTISTA PATRON", "JANN SEO MAGBANUA PEPITO", "MARY ANN DACILLO RAMIREZ", "FILOMENO SAWIT RAMOS", "DOMINGO MAMURI SIMANGAN", "ADELZA DIVINAGRACIA SUCO", "ROSE MARIE MENDOZA TAN", "MONALIZA YAMBAO VALEROS"],
-        "SBG HEAD 2 / CCPI": ["JESSA CATONER ABENIR", "ROMEO MANUTA ACANTILADO", "JOSEPH SISON DELOS SANTOS", "FERNAND GUMAPAC DIGAMON", "ANNA MAE SUPERIORIDAD EDIANEL", "MARK FAGELA ENDITA", "GERVIE CERBITO ESPINOSA", "CARL BALMES FRANCISCO", "ROGEL DINGDING GETARUELAS", "MANUEL ERIC DISACULANGAN GONZALES", "PRINCESS TUNGUL MANANSALA", "MARCO MACASADDUG MOLINA", "ROSALINDA BETONGGA NIÑO", "JENIFFER CENTENO VICTORINO", "ELENA LOPEZ YBARRITA", "JOY MENDEZ BIAZON", "JOSE MARI SAN JUAN HERNANDEZ"],
-        "SBG HEAD 2 / DELFI": ["RAMEL ALALIM ANDO", "MEINRADO PASIA ARGUELLES", "MARIAN SALAMAT BALAN", "MELMAR UY BARDENAS", "MARY ANN ARANDIA BOLDERO", "ANABELLE CRAMPATANTA BOLIMA", "ELLINETTE JANE TRINIDAD BUSI", "JOHN EMMANUEL BONGATO CABALUNA", "ZEBEDEE PEREZ COLLADO", "ROSALINDA PALCON COSTELO", "SHEENA AREA OPERATIONS MANAGER", "JUVY BUENAFE DENIOLA", "ROMEO PACUL DOMINGO", "ALAIN SALINAS DONEZA", "JESTONI PALOMAR EPETIA", "IRENE SUVA FRANCO", "FRANKLIN ANCINO HILADO", "REYNALD ROVILLOS KOSCA", "RODOLFO RICARDO LEGASPI", "JESSIE EVANGELISTA MALIGAYA", "NENIT CLARITO MENDOZA", "MARK RUDOLPH MONTEMAYOR ORTIZ", "PETER QUINTOS QUINDOY", "JOHN PATRICK JUATCHON REYES", "GILBERT MAGBOJOS VIDAD", "ADJERICO NIÑO SUMAGUI MADRIAGA", "GLADYS GOLIAT DE GUZMAN", "JOSE MARI SAN JUAN HERNANDEZ"],
-        "SBG 1 / NUTRI-ASIA": ["EDGAR ROSALES NAMORO", "ARNEL MORALLOS ADTO", "MARK ANTHONY CARLON AGAPAY", "RYAN AFUERTO ALMAZAN", "MEL RYAN BAYLON ANDAYA", "KIM CHRISTIAN PADILLO ANGELES", "MARK ANTHONY SENAS BALATBAT", "ZANDRE CAPULSO BAYORAN", "FRANZ CJ PANCHO CANLAS", "ROEL JOHN CYRUS VILLANUEVA CASUGA", "MATEO BORDEOS CERNECHEZ", "CHRISTIAN RAY COLLADO", "ANTONIO SEGOVIA DELFIN", "ERWIN CABARLE EDORIA", "JAYSON ALAIBILLA FERALES", "REDEM CLAUNA FERNANDEZ", "JAY-AR VALIENTE GALAM", "RECLYM PUDE GERONIMO", "BUTCH AGAYO GRAGASIN", "MICHAEL JOHN ESTACIO GUTIERREZ", "HERBERT TOLENTINO JUNGCO", "JOEMIE MALABA LADRERA", "MARK JOSEPH HERNANDEZ MALABANAN", "FRITZ BRYAN CHAN MAMPORTE", "CARLITO MANUEL MATAGA", "SIRDAN MARIANO MILLAGRACIA", "JEROME LOU OMOLON MORON", "RICO IBARRETA NAMORO", "JOHN LESTER FRANCISCO OMIGAN", "RENZ KENARD PADUL PALAMING", "NIEL ALLEN FIGUEROA PANGILINAN", "WILLIAM VENTA PANGILINAN", "ARNEL VINO QUIZON", "RHIAN DEM ALCONES ROMULO", "MARVIN CARIAN RUMA", "ALJEM CHRISTIAN DUARTE", "VICTORIA NONETTE LIMPIN CARLOS"],
-        "HR / ADMIN / ACCOUNTING": ["CHRISTOPHER RUFO CANTOS", "ROMAN LAUGUILO DELA CRUZ", "MA. KRISTINE QUIMSON ENDAYA", "MARICEL FAJARDO LEGASPI", "TERESITA PASION LUMANIOG", "ELEAZAR DELA CERNA FAMORCAN", "GLENN LEUTERIO HERNANDEZ", "VICTORIA NONETTE LIMPIN CARLOS", "JOSE MARI SAN JUAN HERNANDEZ", "AREM IRISH MALLARI GONZALES", "NILO ANGEO OCAMPO VIADO"],
-        "C-JOY / BUSINESS DEVELOPMENT": ["BHALEMORE JAVILLO ESCANO", "NILO ANGELO OCAMPO VIADO"]
-    };
-
     let rawData = [];
-    const tsvUrl = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:tsv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    const tsvUrl = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:tsv`;
 
     fetch(tsvUrl)
         .then(res => res.text())
         .then(tsvText => {
             let lines = tsvText.split('\n');
             let counts = {};
-            let globalApplicantsSum = 0;
+            let supervisorToDeptMap = {}; 
+            let uniqueDepts = new Set();
+            let totalApplicantsCount = 0;
             
             lines.forEach((line, index) => {
                 if (index === 0) return; 
                 let columns = line.split('\t');
-                if (columns && columns[1]) {
-                    let name = columns[1].replace(/^"|"$/g, '').trim().toUpperCase();
-                    if (name !== "") {
-                        counts[name] = (counts[name] || 0) + 1;
-                        globalApplicantsSum++;
+                
+                // 🎯 BINABASA ANG INDEX 34 (COLUMN AI) AT DEPARTMENT (COLUMN AH / INDEX 33)
+                if (columns.length > 34) {
+                    let supervisor = columns[34].replace(/^"|"$/g, '').trim().toUpperCase();
+                    let dept = columns[33] ? columns[33].replace(/^"|"$/g, '').trim().toUpperCase() : "OPERATIONS";
+                    
+                    if (dept.includes("CCPI")) dept = "SBG HEAD 2 / CCPI";
+                    else if (dept.includes("URATEX")) dept = "SBG HEAD 2 / URATEX";
+                    else if (dept.includes("WOW")) dept = "THE WOW GROUP";
+                    else if (dept.includes("SERTA")) dept = "SBG 2 HEAD / SERTA";
+                    else if (dept.includes("DELFI")) dept = "SBG HEAD 2 / DELFI";
+                    else if (dept.includes("NUTRI")) dept = "SBG 1 / NUTRI-ASIA";
+                    else if (dept.includes("HR") || dept.includes("ACCOUNTING") || dept.includes("STAFF")) dept = "HR / ADMIN / ACCOUNTING";
+                    else if (dept.includes("JOY")) dept = "C-JOY / BUSINESS DEVELOPMENT";
+                    
+                    if (supervisor !== "" && supervisor !== "SUPERVISOR / COORDINATOR" && supervisor !== "N/A" && supervisor !== "NA") {
+                        counts[supervisor] = (counts[supervisor] || 0) + 1;
+                        supervisorToDeptMap[supervisor] = dept;
+                        uniqueDepts.add(dept);
+                        totalApplicantsCount++;
                     }
                 }
             });
 
-            let formattedDataset = [];
-            let activeSupervisorsCounter = 0;
-
-            for (let dept in SUPERVISOR_MATRIX) {
-                SUPERVISOR_MATRIX[dept].forEach(sup => {
-                    let matchingCount = counts[sup.toUpperCase()] || 0;
-                    if (matchingCount > 0) activeSupervisorsCounter++;
-                    formattedDataset.push({ "department": dept, "supervisor": sup, "count": matchingCount });
+            let finalDataset = [];
+            for (let supervisor in counts) {
+                finalDataset.push({
+                    "department": supervisorToDeptMap[supervisor],
+                    "supervisor": supervisor,
+                    "count": counts[supervisor]
                 });
             }
 
-            rawData = formattedDataset;
-            document.getElementById('total-supervisors-kpi').innerText = activeSupervisorsCounter;
-            document.getElementById('total-applicants-kpi').innerText = globalApplicantsSum;
+            finalDataset.sort((a, b) => b.count - a.count);
+            rawData = finalDataset;
+            
+            document.getElementById('total-supervisors-kpi').innerText = Object.keys(counts).length;
+            document.getElementById('total-applicants-kpi').innerText = totalApplicantsCount;
+            document.getElementById('total-departments-kpi').innerText = uniqueDepts.size > 0 ? uniqueDepts.size : 9;
+
             renderTable(rawData);
         })
         .catch(() => {
-            document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger); padding: 30px; font-weight:600;">Failed to establish direct canvas link to Google Sheets. Please ensure your Spreadsheet is shared as "Anyone with the link".</td></tr>';
+            document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger); padding: 30px; font-weight:600;">Failed to establish direct connection to Google Sheets. Please ensure your Spreadsheet is shared as "Anyone with the link".</td></tr>';
         });
 
     function renderTable(data) {
@@ -164,13 +226,11 @@
         const deptVal = document.getElementById('deptFilter').value.toLowerCase();
         const filtered = rawData.filter(item => {
             const matchesSearch = item.supervisor.toLowerCase().includes(searchTxt);
-            const matchesDept = item.department.toLowerCase().includes(deptVal);
+            const matchesDept = item.department.toLowerCase().includes(deptVal) || deptVal === "";
             return matchesSearch && matchesDept;
         });
         renderTable(filtered);
     }
 </script>
- const SHEET_NAME = "Main Data";
-   
 </body>
 </html>
