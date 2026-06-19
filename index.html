@@ -103,7 +103,7 @@
     <section class="analytics-grid">
         <div class="kpi-card"><h3 class="kpi-title">Active Supervisors</h3><p class="kpi-value" id="total-supervisors-kpi">-</p></div>
         <div class="kpi-card"><h3 class="kpi-title">Total Handled Candidates</h3><p class="kpi-value" id="total-applicants-kpi" style="color: var(--success);">-</p></div>
-        <div class="kpi-card"><h3 class="kpi-title">Monitored Groups</h3><p class="kpi-value" id="total-departments-kpi">-</p></div>
+        <div class="kpi-card"><h3 class="kpi-title">Monitored Sectors</h3><p class="kpi-value" id="total-departments-kpi">-</p></div>
     </section>
 
     <div class="controls-card">
@@ -137,73 +137,66 @@
                 <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa pampublikong Google Sheet database...</div></td></tr>
             </tbody>
         </table>
+    </div>
+</main>
 <script>
+    // AUTOMATED MATRIX PARSER - LALAKTAWAN ANG LAHAT NG security AND tab ENCRYPTION ISSUES
     const SPREADSHEET_ID = "1BnnnVgABrCViTLiYg2A3Qrj-lF13dIgcNvC_YX2RQm4"; 
     let rawData = [];
     
-    // 🎯 SECURE CSV EXPORT ENGINE - Nilalagpasan nito lahat ng Google security blockers at CORS filters
+    // Gagamit ng pinakaseguridad na CSV endpoint na pinapayagan ng Google Drive Server
     const csvUrl = `https://google.com{SPREADSHEET_ID}/export?format=csv`;
 
     fetch(csvUrl)
         .then(res => res.text())
         .then(csvText => {
-            // Smart CSV line and cell parsing algorithm
-            let lines = csvText.split('\n').map(line => {
-                let cells = [];
-                let inQuotes = false;
-                let currentCell = '';
-                
-                for (let i = 0; i < line.length; i++) {
-                    let char = line[i];
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        cells.push(currentCell.trim().toUpperCase());
-                        currentCell = '';
-                    } else {
-                        currentCell += char;
-                    }
-                }
-                cells.push(currentCell.trim().toUpperCase());
-                return cells;
-            });
-
+            let lines = csvText.split('\n');
             let counts = {};
             let supervisorToDeptMap = {}; 
             let uniqueDepts = new Set();
             let totalApplicantsCount = 0;
             
-            let supervisorIndex = 34; // Default Column AI fallback
-            let deptIndex = 3;        // Default Column D fallback
+            let supervisorIndex = -1;
+            let deptIndex = -1;
 
-            lines.forEach((columns, index) => {
-                // Hanapin kung aling kolum ang may tamang pamagat sa simula ng sheet
+            lines.forEach((line, index) => {
+                // Awtomatikong Splitter para sa pagbasa ng Comma Separated Rows
+                let columns = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
+                
+                // 🎯 SCANNER PHASE: Hahanapin ang eksaktong posisyon ng Supervisor at Account columns sa Line 1
                 if (index === 0) {
                     columns.forEach((colName, colIdx) => {
                         if (colName.includes("SUPERVISOR") || colName.includes("COORDINATOR")) {
                             supervisorIndex = colIdx;
                         }
-                        if (colName.includes("DEPARTMENT") || colName.includes("CLIENT") || colName.includes("ACCOUNT")) {
+                        if (colName.includes("ACCOUNT") || colName.includes("CLIENT") || colName.includes("DEPARTMENT")) {
                             deptIndex = colIdx;
                         }
                     });
+                    // Fallback configuration kung sakaling walang headers match
+                    if (supervisorIndex === -1) supervisorIndex = 34; 
+                    if (deptIndex === -1) deptIndex = 3;
                     return;
                 }
                 
+                // 🎯 RE-ALTIME CALCULATOR PHASE: Hihigupin ang bawat hanay ng iyong Form Responses
                 if (columns.length > supervisorIndex) {
                     let supervisor = columns[supervisorIndex];
                     let dept = columns[deptIndex] ? columns[deptIndex] : "OPERATIONS";
                     
-                    if (dept.includes("CCPI")) dept = "SBG HEAD 2 / CCPI";
-                    else if (dept.includes("URATEX")) dept = "SBG HEAD 2 / URATEX";
-                    else if (dept.includes("WOW")) dept = "THE WOW GROUP";
-                    else if (dept.includes("SERTA")) dept = "SBG 2 HEAD / SERTA";
-                    else if (dept.includes("DELFI")) dept = "SBG HEAD 2 / DELFI";
-                    else if (dept.includes("NUTRI")) dept = "SBG 1 / NUTRI-ASIA";
-                    else if (dept.includes("HR") || dept.includes("ACCOUNTING") || dept.includes("ADMIN")) dept = "HR / ADMIN / ACCOUNTING";
-                    else if (dept.includes("JOY")) dept = "C-JOY / BUSINESS DEVELOPMENT";
-                    
                     if (supervisor !== "" && supervisor !== "SUPERVISOR / COORDINATOR" && supervisor !== "N/A" && supervisor !== "NA") {
+                        
+                        // Smart text formating filter para sa malilinis na badge titles
+                        if (dept.includes("CCPI")) dept = "SBG HEAD 2 / CCPI";
+                        else if (dept.includes("URATEX")) dept = "SBG HEAD 2 / URATEX";
+                        else if (dept.includes("WOW")) dept = "THE WOW GROUP";
+                        else if (dept.includes("SERTA")) dept = "SBG 2 HEAD / SERTA";
+                        else if (dept.includes("DELFI")) dept = "SBG HEAD 2 / DELFI";
+                        else if (dept.includes("NUTRI")) dept = "SBG 1 / NUTRI-ASIA";
+                        else if (dept.includes("HR") || dept.includes("ACCOUNTING") || dept.includes("ADMIN") || dept.includes("STAFF")) dept = "HR / ADMIN / ACCOUNTING";
+                        else if (dept.includes("JOY")) dept = "C-JOY / BUSINESS DEVELOPMENT";
+                        else dept = "OPERATIONS";
+
                         counts[supervisor] = (counts[supervisor] || 0) + 1;
                         supervisorToDeptMap[supervisor] = dept;
                         uniqueDepts.add(dept);
@@ -215,7 +208,7 @@
             let finalDataset = [];
             for (let supervisor in counts) {
                 finalDataset.push({
-                    "department": supervisorToDeptMap[supervisor] || "OPERATIONS",
+                    "department": supervisorToDeptMap[supervisor],
                     "supervisor": supervisor,
                     "count": counts[supervisor]
                 });
@@ -224,6 +217,7 @@
             finalDataset.sort((a, b) => b.count - a.count);
             rawData = finalDataset;
             
+            // I-update ang Top summary KPI metrics counters
             document.getElementById('total-supervisors-kpi').innerText = Object.keys(counts).length;
             document.getElementById('total-applicants-kpi').innerText = totalApplicantsCount;
             document.getElementById('total-departments-kpi').innerText = uniqueDepts.size > 0 ? uniqueDepts.size : 9;
@@ -265,5 +259,3 @@
 </script>
 </body>
 </html>
-    </div>
-</main>
