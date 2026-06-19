@@ -140,9 +140,10 @@
     </div>
 </main>
 <script>
-    // AUTOMATED SYSTEM ENGINE DIRECT READ VIA PUBLIC TSV EXPORT FEED
     const SPREADSHEET_ID = "1BnnnVgABrCViTLiYg2A3Qrj-lF13dIgcNvC_YX2RQm4"; 
     let rawData = [];
+    
+    // 🎯 UNIVERSAL SYNC FEED - Kumukuha ng buong table blocks para laktawan ang tab errors
     const tsvUrl = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:tsv`;
 
     fetch(tsvUrl)
@@ -156,29 +157,35 @@
             
             lines.forEach((line, index) => {
                 if (index === 0) return; 
-                let columns = line.split('\t');
+                let columns = line.split('\t').map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
                 
-                // 🎯 BINABASA ANG INDEX 34 (COLUMN AI) AT DEPARTMENT (COLUMN AH / INDEX 33)
-                if (columns.length > 34) {
-                    let supervisor = columns[34].replace(/^"|"$/g, '').trim().toUpperCase();
-                    let dept = columns[33] ? columns[33].replace(/^"|"$/g, '').trim().toUpperCase() : "OPERATIONS";
-                    
-                    if (dept.includes("CCPI")) dept = "SBG HEAD 2 / CCPI";
-                    else if (dept.includes("URATEX")) dept = "SBG HEAD 2 / URATEX";
-                    else if (dept.includes("WOW")) dept = "THE WOW GROUP";
-                    else if (dept.includes("SERTA")) dept = "SBG 2 HEAD / SERTA";
-                    else if (dept.includes("DELFI")) dept = "SBG HEAD 2 / DELFI";
-                    else if (dept.includes("NUTRI")) dept = "SBG 1 / NUTRI-ASIA";
-                    else if (dept.includes("HR") || dept.includes("ACCOUNTING") || dept.includes("STAFF")) dept = "HR / ADMIN / ACCOUNTING";
-                    else if (dept.includes("JOY")) dept = "C-JOY / BUSINESS DEVELOPMENT";
-                    
-                    if (supervisor !== "" && supervisor !== "SUPERVISOR / COORDINATOR" && supervisor !== "N/A" && supervisor !== "NA") {
+                // 🎯 DYNAMIC CELL SCANNER: Isa-isang titingnan ang bawat cell para masigurong mababasa ang pangalan kahit lumipat ng column
+                columns.forEach((cellValue, cellIndex) => {
+                    if (cellValue && cellValue.length > 3 && cellIndex > 10) {
+                        // Salain ang mga system header texts
+                        if (cellValue.includes("SUPERVISOR") || cellValue.includes("COORDINATOR") || cellValue === "N/A" || cellValue === "NA") return;
+                        
+                        let supervisor = cellValue;
                         counts[supervisor] = (counts[supervisor] || 0) + 1;
-                        supervisorToDeptMap[supervisor] = dept;
-                        uniqueDepts.add(dept);
                         totalApplicantsCount++;
+                        
+                        // Hahanapin ang department name sa mga katabing columns (Sectors check)
+                        let assignedDept = "OPERATIONS";
+                        for (let i = 0; i < columns.length; i++) {
+                            let checkVal = columns[i] || "";
+                            if (checkVal.includes("CCPI")) assignedDept = "SBG HEAD 2 / CCPI";
+                            else if (checkVal.includes("URATEX")) assignedDept = "SBG HEAD 2 / URATEX";
+                            else if (checkVal.includes("WOW")) assignedDept = "THE WOW GROUP";
+                            else if (checkVal.includes("SERTA")) assignedDept = "SBG 2 HEAD / SERTA";
+                            else if (checkVal.includes("DELFI")) assignedDept = "SBG HEAD 2 / DELFI";
+                            else if (checkVal.includes("NUTRI")) assignedDept = "SBG 1 / NUTRI-ASIA";
+                            else if (checkVal.includes("HR") || checkVal.includes("ACCOUNTING") || checkVal.includes("ADMIN")) assignedDept = "HR / ADMIN / ACCOUNTING";
+                            else if (checkVal.includes("JOY")) assignedDept = "C-JOY / BUSINESS DEVELOPMENT";
+                        }
+                        supervisorToDeptMap[supervisor] = assignedDept;
+                        uniqueDepts.add(assignedDept);
                     }
-                }
+                });
             });
 
             let finalDataset = [];
