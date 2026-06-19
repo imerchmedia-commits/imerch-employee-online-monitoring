@@ -140,19 +140,19 @@
     </div>
 </main>
 <script>
-    // 🎯 SECURE JSONP CONTEXT BYPASSER - Gagamit ng dynamic script injection para basagin ang CORS blocking ng Google
+    // 🎯 SECURE BYPASS LINK: Gagamit ng JSONP format para lasot sa CORS blocking ng Google server
     const WEB_APP_URL = "https://google.com"; 
     
     let rawData = [];
 
     function loadDashboardData() {
         const script = document.createElement('script');
-        // Ipinapasa ang callback parameter para mag-trigger ang JavaScript output format
+        // Ipinapasa ang callback parameter sa URL para tanggapin ng doGet function mo
         script.src = `${WEB_APP_URL}?callback=handleSheetResponse`;
         document.body.appendChild(script);
     }
 
-    // Awtomatikong tatakbo kapag sumagot na ang Google Server App pipeline
+    // Awtomatikong mag-e-execute kapag sumagot na ang Google Server Pipeline
     function handleSheetResponse(data) {
         rawData = data;
         
@@ -202,7 +202,7 @@
         renderTable(filtered);
     }
 
-    // Simulan ang auto-load activation sequence pagka-bukas ng pahina
+    // Simulan ang auto-load sequence pagka-bukas ng pahina
     window.onload = loadDashboardData;
 </script>
 </body>
