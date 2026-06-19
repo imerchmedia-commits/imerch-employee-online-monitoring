@@ -137,61 +137,85 @@
                 <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa pampublikong Google Sheet database...</div></td></tr>
             </tbody>
         </table>
-    </div>
-</main>
 <script>
     const SPREADSHEET_ID = "1BnnnVgABrCViTLiYg2A3Qrj-lF13dIgcNvC_YX2RQm4"; 
     let rawData = [];
     
-    // 🎯 UNIVERSAL SYNC FEED - Kumukuha ng buong table blocks para laktawan ang tab errors
-    const tsvUrl = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:tsv`;
+    // 🎯 SECURE CSV EXPORT ENGINE - Nilalagpasan nito lahat ng Google security blockers at CORS filters
+    const csvUrl = `https://google.com{SPREADSHEET_ID}/export?format=csv`;
 
-    fetch(tsvUrl)
+    fetch(csvUrl)
         .then(res => res.text())
-        .then(tsvText => {
-            let lines = tsvText.split('\n');
+        .then(csvText => {
+            // Smart CSV line and cell parsing algorithm
+            let lines = csvText.split('\n').map(line => {
+                let cells = [];
+                let inQuotes = false;
+                let currentCell = '';
+                
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        cells.push(currentCell.trim().toUpperCase());
+                        currentCell = '';
+                    } else {
+                        currentCell += char;
+                    }
+                }
+                cells.push(currentCell.trim().toUpperCase());
+                return cells;
+            });
+
             let counts = {};
             let supervisorToDeptMap = {}; 
             let uniqueDepts = new Set();
             let totalApplicantsCount = 0;
             
-            lines.forEach((line, index) => {
-                if (index === 0) return; 
-                let columns = line.split('\t').map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
-                
-                // 🎯 DYNAMIC CELL SCANNER: Isa-isang titingnan ang bawat cell para masigurong mababasa ang pangalan kahit lumipat ng column
-                columns.forEach((cellValue, cellIndex) => {
-                    if (cellValue && cellValue.length > 3 && cellIndex > 10) {
-                        // Salain ang mga system header texts
-                        if (cellValue.includes("SUPERVISOR") || cellValue.includes("COORDINATOR") || cellValue === "N/A" || cellValue === "NA") return;
-                        
-                        let supervisor = cellValue;
-                        counts[supervisor] = (counts[supervisor] || 0) + 1;
-                        totalApplicantsCount++;
-                        
-                        // Hahanapin ang department name sa mga katabing columns (Sectors check)
-                        let assignedDept = "OPERATIONS";
-                        for (let i = 0; i < columns.length; i++) {
-                            let checkVal = columns[i] || "";
-                            if (checkVal.includes("CCPI")) assignedDept = "SBG HEAD 2 / CCPI";
-                            else if (checkVal.includes("URATEX")) assignedDept = "SBG HEAD 2 / URATEX";
-                            else if (checkVal.includes("WOW")) assignedDept = "THE WOW GROUP";
-                            else if (checkVal.includes("SERTA")) assignedDept = "SBG 2 HEAD / SERTA";
-                            else if (checkVal.includes("DELFI")) assignedDept = "SBG HEAD 2 / DELFI";
-                            else if (checkVal.includes("NUTRI")) assignedDept = "SBG 1 / NUTRI-ASIA";
-                            else if (checkVal.includes("HR") || checkVal.includes("ACCOUNTING") || checkVal.includes("ADMIN")) assignedDept = "HR / ADMIN / ACCOUNTING";
-                            else if (checkVal.includes("JOY")) assignedDept = "C-JOY / BUSINESS DEVELOPMENT";
+            let supervisorIndex = 34; // Default Column AI fallback
+            let deptIndex = 3;        // Default Column D fallback
+
+            lines.forEach((columns, index) => {
+                // Hanapin kung aling kolum ang may tamang pamagat sa simula ng sheet
+                if (index === 0) {
+                    columns.forEach((colName, colIdx) => {
+                        if (colName.includes("SUPERVISOR") || colName.includes("COORDINATOR")) {
+                            supervisorIndex = colIdx;
                         }
-                        supervisorToDeptMap[supervisor] = assignedDept;
-                        uniqueDepts.add(assignedDept);
+                        if (colName.includes("DEPARTMENT") || colName.includes("CLIENT") || colName.includes("ACCOUNT")) {
+                            deptIndex = colIdx;
+                        }
+                    });
+                    return;
+                }
+                
+                if (columns.length > supervisorIndex) {
+                    let supervisor = columns[supervisorIndex];
+                    let dept = columns[deptIndex] ? columns[deptIndex] : "OPERATIONS";
+                    
+                    if (dept.includes("CCPI")) dept = "SBG HEAD 2 / CCPI";
+                    else if (dept.includes("URATEX")) dept = "SBG HEAD 2 / URATEX";
+                    else if (dept.includes("WOW")) dept = "THE WOW GROUP";
+                    else if (dept.includes("SERTA")) dept = "SBG 2 HEAD / SERTA";
+                    else if (dept.includes("DELFI")) dept = "SBG HEAD 2 / DELFI";
+                    else if (dept.includes("NUTRI")) dept = "SBG 1 / NUTRI-ASIA";
+                    else if (dept.includes("HR") || dept.includes("ACCOUNTING") || dept.includes("ADMIN")) dept = "HR / ADMIN / ACCOUNTING";
+                    else if (dept.includes("JOY")) dept = "C-JOY / BUSINESS DEVELOPMENT";
+                    
+                    if (supervisor !== "" && supervisor !== "SUPERVISOR / COORDINATOR" && supervisor !== "N/A" && supervisor !== "NA") {
+                        counts[supervisor] = (counts[supervisor] || 0) + 1;
+                        supervisorToDeptMap[supervisor] = dept;
+                        uniqueDepts.add(dept);
+                        totalApplicantsCount++;
                     }
-                });
+                }
             });
 
             let finalDataset = [];
             for (let supervisor in counts) {
                 finalDataset.push({
-                    "department": supervisorToDeptMap[supervisor],
+                    "department": supervisorToDeptMap[supervisor] || "OPERATIONS",
                     "supervisor": supervisor,
                     "count": counts[supervisor]
                 });
@@ -241,3 +265,5 @@
 </script>
 </body>
 </html>
+    </div>
+</main>
