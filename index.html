@@ -1,85 +1,103 @@
-const GITHUB_ACCESS_TOKEN = "YOUR_GITHUB_PERSONAL_ACCESS_TOKEN";
-const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";
-const REPO_NAME = "imerch-monitoring"; 
-const FILE_PATH = "data.json"; 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMerch Employee Online Monitoring</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6; color: #1f2937; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #6b7280; margin-top: 0; margin-bottom: 25px; }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; }
+        input, select { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; flex: 1; }
+        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #1e3a8a; color: white; font-weight: 600; text-transform: uppercase; font-size: 13px; }
+        tr:hover { background-color: #f9fafb; }
+        .badge-dept { background-color: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .count-zero { background-color: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+        .count-active { background-color: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-// Kumpletong updated Matrix kasama ang lahat ng bagong grupo at pangalan
-const SUPERVISOR_MATRIX = {
-  "OPERATIONS": ["JAN PATRICK DAYO EVANGELISTA", "ROXANNE STREBEL FERNANDO", "RONNEL ESPINO GINGCO", "AREM IRISH MALLARI GONZALES", "NILO ANGELO OCAMPO VIADO", "JOSE MARI SAN JUAN HERNANDEZ", "VICTORIA NONETTE LIMPIN CARLOS"],
-  "SBG 2 HEAD / SERTA": ["SARAHBETH PUNDAN PAHATI", "VICTORIA NONETTE LIMPIN CARLOS"],
-  "THE WOW GROUP": ["JULIE ANN BERTIZ JALANDO-ON", "PRINCESS IGNACIO ARNALDO", "JAYSON ATIENZA JUAÑO", "JOSE MARI SAN JUAN HERNANDEZ"],
-  "SBG HEAD 2 / URATEX": ["VICTORIA NONETTE LIMPIN CARLOS", "JEROME ASUNCION ORE", "ALLAN JAMES PEREZ TORLA", "REYCARD NOVEN HERRERA ZABATE", "FERNANDO LAURON BENJAMIN", "VANESSA ENFESTA BENOSA", "CHRISTOPHER GULTIAN BERMUDO", "ALBERTO MIÑUZA CAÑETE", "JAY PADASAS DE LOS SANTOS", "JOHN MARTIN GARINGALAO DE VILLA", "MARK ANTHONY MACARAEG FERRER", "ROWENA JUMALON GUIRIGAY", "JOEMER DIMACALI LEDESMA", "CARLOS CALATIN MAHALIN", "CHITO CUENZA OBEÑA", "ALLAN PAUL BAUTISTA PATRON", "JANN SEO MAGBANUA PEPITO", "MARY ANN DACILLO RAMIREZ", "FILOMENO SAWIT RAMOS", "DOMINGO MAMURI SIMANGAN", "ADELZA DIVINAGRACIA SUCO", "ROSE MARIE MENDOZA TAN", "MONALIZA YAMBAO VALEROS"],
-  "SBG HEAD 2 / CCPI": ["JESSA CATONER ABENIR", "ROMEO MANUTA ACANTILADO", "JOSEPH SISON DELOS SANTOS", "FERNAND GUMAPAC DIGAMON", "ANNA MAE SUPERIORIDAD EDIANEL", "MARK FAGELA ENDITA", "GERVIE CERBITO ESPINOSA", "CARL BALMES FRANCISCO", "ROGEL DINGDING GETARUELAS", "MANUEL ERIC DIMACULANGAN GONZALES", "PRINCESS TUNGUL MANANSALA", "MARCO MACASADDUG MOLINA", "ROSALINDA BETONGGA NIÑO", "JENIFFER CENTENO VICTORINO", "ELENA LOPEZ YBARRITA", "JOY MENDEZ BIAZON", "JOSE MARI SAN JUAN HERNANDEZ"],
-  "SBG HEAD 2 / DELFI": ["RAMEL ALALIM ANDO", "MEINRADO PASIA ARGUELLES", "MARIAN SALAMAT BALAN", "MELMAR UY BARDENAS", "MARY ANN ARANDIA BOLDERO", "ANABELLE CRAMPATANTA BOLIMA", "ELLINETTE JANE TRINIDAD BUSI", "JOHN EMMANUEL BONGATO CABALUNA", "ZEBEDEE PEREZ COLLADO", "ROSALINDA PALCON COSTELO", "SHEENA ARELLANO DAYRIT", "JUVY BUENAFE DENIOLA", "ROMEO PACUL DOMINGO", "ALAIN SALINAS DONEZA", "JESTONI PALOMAR EPETIA", "IRENE SUVA FRANCO", "FRANKLIN ANCINO HILADO", "REYNALD ROVILLOS KOSCA", "RODOLFO RICARDO LEGASPI", "JESSIE EVANGELISTA MALIGAYA", "NENIT CLARITO MENDOZA", "MARK RUDOLPH MONTEMAYOR ORTIZ", "PETER QUINTOS QUINDOY", "JOHN PATRICK JUATCHON REYES", "GILBERT MAGBOJOS VIDAD", "ADJERICO NIÑO SUMAGUI MADRIAGA", "GLADYS GOLIAT DE GUZMAN", "JOSE MARI SAN JUAN HERNANDEZ"],
-  "SBG 1 / NUTRI-ASIA": ["EDGAR ROSALES NAMORO", "ARNEL MORALLOS ADTO", "MARK ANTHONY CARLON AGAPAY", "RYAN AFUERTO ALMAZAN", "MEL RYAN BAYLON ANDAYA", "KIM CHRISTIAN PADILLO ANGELES", "MARK ANTHONY SENAS BALATBAT", "ZANDRE CAPULSO BAYORAN", "FRANZ CJ PANCHO CANLAS", "ROEL JOHN CYRUS VILLANUEVA CASUGA", "MATEO BORDEOS CERNECHEZ", "CHRISTIAN RAY COLLADO", "ANTONIO SEGOVIA DELFIN", "ERWIN CABARLE EDORIA", "JAYSON ALAIBILLA FERALES", "REDEM CLAUNA FERNANDEZ", "JAY-AR VALIENTE GALAM", "RECLYM PUDE GERONIMO", "BUTCH AGAYO GRAGASIN", "MICHAEL JOHN ESTACIO GUTIERREZ", "HERBERT TOLENTINO JUNGCO", "JOEMIE MALABA LADRERA", "MARK JOSEPH HERNANDEZ MALABANAN", "FRITZ BRYAN CHAN MAMPORTE", "CARLITO MANUEL MATAGA", "SIRDAN MARIANO MILLAGRACIA", "JEROME LOU OMOLON MORON", "RICO IBARRETA NAMORO", "JOHN LESTER FRANCISCO OMIGAN", "RENZ KENARD PADUL PALAMING", "NIEL ALLEN FIGUEROA PANGILINAN", "WILLIAM VENTA PANGILINAN", "ARNEL VINO QUIZON", "RHIAN DEM ALCONES ROMULO", "MARVIN CARIAN RUMA", "ALJEM CHRISTIAN DUARTE", "VICTORIA NONETTE LIMPIN CARLOS"],
-  "HR / ADMIN / ACCOUNTING": ["CHRISTOPHER RUFO CANTOS", "ROMAN LAUGUILO DELA CRUZ", "MA. KRISTINE QUIMSON ENDAYA", "MARICEL FAJARDO LEGASPI", "TERESITA PASION LUMANIOG", "ELEAZAR DELA CERNA FAMORCAN", "GLENN LEUTERIO HERNANDEZ", "VICTORIA NONETTE LIMPIN CARLOS", "JOSE MARI SAN JUAN HERNANDEZ", "AREM IRISH MALLARI GONZALES"],
-  "C-JOY / BUSINESS DEVELOPMENT": ["BHALEMORE JAVILLO ESCANO", "NILO ANGELO OCAMPO VIADO"]
-};
+<div class="container">
+    <h1>iMerch Employee Online Monitoring</h1>
+    <p class="subtitle">Live Recruitment and Application Monitoring System</p>
 
-function onEdit(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Main Data");
-  if (!sheet) return;
-  
-  var lr = sheet.getLastRow();
-  if (lr < 2) return;
-  
-  // Kumukuha ng data sa Column B (Supervisor Name)
-  var supervisorData = sheet.getRange(2, 2, lr - 1, 1).getValues();
-  
-  var counts = {};
-  for (var i = 0; i < supervisorData.length; i++) {
-    var name = supervisorData[i].toString().trim().toUpperCase();
-    if (name !== "") {
-      counts[name] = (counts[name] || 0) + 1;
+    <div class="controls">
+        <input type="text" id="searchBar" placeholder="Search Supervisor Name..." onkeyup="filterData()">
+        <select id="deptFilter" onchange="filterData()">
+            <option value="">All Departments</option>
+            <option value="OPERATIONS">OPERATIONS</option>
+            <option value="SERTA">SBG 2 HEAD / SERTA</option>
+            <option value="WOW">THE WOW GROUP</option>
+            <option value="URATEX">SBG HEAD 2 / URATEX</option>
+            <option value="CCPI">SBG HEAD 2 / CCPI</option>
+            <option value="DELFI">SBG HEAD 2 / DELFI</option>
+            <option value="NUTRI-ASIA">SBG 1 / NUTRI-ASIA</option>
+            <option value="ADMIN">HR / ADMIN / ACCOUNTING</option>
+            <option value="C-JOY">C-JOY / BUSINESS DEVELOPMENT</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Department / Unit</th>
+                <th>Supervisor / Coordinator</th>
+                <th style="text-align: center;">Total Applicants / Handled</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            <tr><td colspan="3" style="text-align:center;">Loading tracking data...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let rawData = [];
+
+    fetch('data.json')
+        .then(res => res.json())
+        .then(data => {
+            rawData = data;
+            renderTable(rawData);
+        })
+        .catch(() => {
+            document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Failed to load data. Waiting for Google Sheets data update...</td></tr>';
+        });
+
+    function renderTable(data) {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        if(data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No matching records found.</td></tr>';
+            return;
+        }
+        data.forEach(item => {
+            const badgeClass = item.count > 0 ? 'count-active' : 'count-zero';
+            const row = `<tr>
+                <td><span class="badge-dept" title="${item.department}">${item.department}</span></td>
+                <td><strong>${item.supervisor}</strong></td>
+                <td style="text-align: center;"><span class="${badgeClass}">${item.count}</span></td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
     }
-  }
-  
-  var dashboardData = [];
-  
-  for (var dept in SUPERVISOR_MATRIX) {
-    var supers = SUPERVISOR_MATRIX[dept];
-    for (var j = 0; j < supers.length; j++) {
-      var sName = supers[j];
-      var currentCount = counts[sName.toUpperCase()] || 0;
-      
-      dashboardData.push({
-        "department": dept,
-        "supervisor": sName,
-        "count": currentCount
-      });
-    }
-  }
-  
-  uploadToGitHub(dashboardData);
-}
 
-function uploadToGitHub(data) {
-  var url = "https://github.com" + GITHUB_USERNAME + "/" + REPO_NAME + "/contents/" + FILE_PATH;
-  var payload = JSON.stringify(data);
-  var sha = "";
-  
-  var getOptions = {
-    "method": "get",
-    "headers": { "Authorization": "token " + GITHUB_ACCESS_TOKEN },
-    "muteHttpExceptions": true
-  };
-  
-  var response = UrlFetchApp.fetch(url, getOptions);
-  if (response.getResponseCode() == 200) {
-    sha = JSON.parse(response.getContentText()).sha;
-  }
-  
-  var putPayload = {
-    "message": "iMerch Realtime Monitoring Update",
-    "content": Utilities.base64Encode(payload, Utilities.Charset.UTF_8)
-  };
-  if (sha !== "") putPayload["sha"] = sha;
-  
-  var putOptions = {
-    "method": "put",
-    "headers": { "Authorization": "token " + GITHUB_ACCESS_TOKEN, "Content-Type": "application/json" },
-    "payload": JSON.stringify(putPayload)
-  };
-  
-  UrlFetchApp.fetch(url, putOptions);
-}
+    function filterData() {
+        const searchTxt = document.getElementById('searchBar').value.toLowerCase();
+        const deptVal = document.getElementById('deptFilter').value.toLowerCase();
+
+        const filtered = rawData.filter(item => {
+            const matchesSearch = item.supervisor.toLowerCase().includes(searchTxt);
+            const matchesDept = item.department.toLowerCase().includes(deptVal);
+            return matchesSearch && matchesDept;
+        });
+        renderTable(filtered);
+    }
+</script>
+</body>
+</html>
