@@ -4,93 +4,164 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iMerch Employee Online Monitoring</title>
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6; color: #1f2937; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        h1 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #6b7280; margin-top: 0; margin-bottom: 25px; }
-        .controls { display: flex; gap: 15px; margin-bottom: 20px; }
-        input, select { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; flex: 1; }
-        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #1e3a8a; color: white; font-weight: 600; text-transform: uppercase; font-size: 13px; }
-        tr:hover { background-color: #f9fafb; }
-        .badge-dept { background-color: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .count-zero { background-color: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
-        .count-active { background-color: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+        :root {
+            --primary: #0f172a;       
+            --primary-light: #1e293b; 
+            --accent: #b45309;        
+            --bg-main: #f8fafc;       
+            --card-bg: #ffffff;
+            --text-dark: #334155;
+            --text-muted: #64748b;
+            --success: #059669;       
+            --danger: #dc2626;        
+            --border-color: #f1f5f9;
+        }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-dark); }
+        .top-navbar { background-color: var(--primary); color: white; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--accent); }
+        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; }
+        .navbar-brand span { color: #fbbf24; font-style: italic; }
+        .live-status-indicator { display: flex; align-items: center; gap: 8px; font-size: 12px; text-transform: uppercase; font-weight: 600; background: rgba(255,255,255,0.06); padding: 6px 14px; border-radius: 20px; }
+        .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 1.8s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .main-content { max-width: 1200px; margin: 40px auto; padding: 0 24px; }
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 35px; }
+        .kpi-card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(148, 163, 184, 0.05); border: 1px solid #e2e8f0; }
+        .kpi-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px 0; font-weight: 600; }
+        .kpi-value { font-size: 32px; font-weight: 700; color: var(--primary); margin: 0; }
+        .controls-card { background: var(--card-bg); border-radius: 12px; padding: 20px 24px; margin-bottom: 25px; border: 1px solid #e2e8f0; display: flex; gap: 20px; }
+        .input-group { flex: 1; }
+        input[type="text"], select { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: var(--text-dark); background-color: #fafafa; box-sizing: border-box; }
+        .table-container { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: var(--primary); color: white; padding: 16px 24px; font-weight: 500; text-transform: uppercase; font-size: 12px; border-bottom: 2px solid var(--accent); }
+        td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        tr:hover td { background-color: #f8fafc; }
+        .badge-dept { background-color: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; border: 1px solid #e2e8f0; }
+        .supervisor-name { font-weight: 600; color: var(--primary-light); }
+        .counter-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; text-align: center; }
+        .count-zero { background-color: #fef2f2; color: var(--danger); border: 1px solid #fee2e2; }
+        .count-active { background-color: #ecfdf5; color: var(--success); border: 1px solid #d1fae5; }
+        .spinner-container { text-align: center; padding: 40px 0; color: var(--text-muted); font-weight: 500; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>iMerch Employee Online Monitoring</h1>
-    <p class="subtitle">Live Recruitment and Application Monitoring System</p>
-
-    <div class="controls">
-        <input type="text" id="searchBar" placeholder="Search Supervisor Name..." onkeyup="filterData()">
-        <select id="deptFilter" onchange="filterData()">
-            <option value="">All Departments</option>
-            <option value="OPERATIONS">OPERATIONS</option>
-            <option value="SERTA">SBG 2 HEAD / SERTA</option>
-            <option value="WOW">THE WOW GROUP</option>
-            <option value="URATEX">SBG HEAD 2 / URATEX</option>
-            <option value="CCPI">SBG HEAD 2 / CCPI</option>
-            <option value="DELFI">SBG HEAD 2 / DELFI</option>
-            <option value="NUTRI-ASIA">SBG 1 / NUTRI-ASIA</option>
-            <option value="ADMIN">HR / ADMIN / ACCOUNTING</option>
-            <option value="C-JOY">C-JOY / BUSINESS DEVELOPMENT</option>
-        </select>
+<header class="top-navbar">
+    <div class="navbar-brand">iMerch <span>Corporate Dashboard</span></div>
+    <div class="live-status-indicator"><div class="pulse-dot"></div>Live Sheet Sync</div>
+</header>
+<main class="main-content">
+    <section class="analytics-grid">
+        <div class="kpi-card"><h3 class="kpi-title">Active Supervisors</h3><p class="kpi-value" id="total-supervisors-kpi">-</p></div>
+        <div class="kpi-card"><h3 class="kpi-title">Total Handled Candidates</h3><p class="kpi-value" id="total-applicants-kpi" style="color: var(--success);">-</p></div>
+        <div class="kpi-card"><h3 class="kpi-title">Monitored Units</h3><p class="kpi-value" id="total-departments-kpi">9</p></div>
+    </section>
+    <div class="controls-card">
+        <div class="input-group"><input type="text" id="searchBar" placeholder="Search supervisor name..." onkeyup="filterData()"></div>
+        <div class="input-group" style="max-width: 300px;">
+            <select id="deptFilter" onchange="filterData()">
+                <option value="">All Business Sectors</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+                <option value="SBG 2 HEAD / SERTA">SBG 2 HEAD / SERTA</option>
+                <option value="THE WOW GROUP">THE WOW GROUP</option>
+                <option value="SBG HEAD 2 / URATEX">SBG HEAD 2 / URATEX</option>
+                <option value="SBG HEAD 2 / CCPI">SBG HEAD 2 / CCPI</option>
+                <option value="SBG HEAD 2 / DELFI">SBG HEAD 2 / DELFI</option>
+                <option value="SBG 1 / NUTRI-ASIA">SBG 1 / NUTRI-ASIA</option>
+                <option value="HR / ADMIN / ACCOUNTING">HR / ADMIN / ACCOUNTING</option>
+                <option value="C-JOY / BUSINESS DEVELOPMENT">C-JOY / BUSINESS DEVELOPMENT</option>
+            </select>
+        </div>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Department / Unit</th>
-                <th>Supervisor / Coordinator</th>
-                <th style="text-align: center;">Total Applicants / Handled</th>
-            </tr>
-        </thead>
-        <tbody id="table-body">
-            <tr><td colspan="3" style="text-align:center;">Loading tracking data...</td></tr>
-        </tbody>
-    </table>
-</div>
-
+    <div class="table-container">
+        <table>
+            <thead><tr><th style="width: 30%;">Department / Unit</th><th style="width: 45%;">Supervisor</th><th style="width: 25%; text-align: center;">Applicants</th></tr></thead>
+            <tbody id="table-body"><tr><td colspan="3"><div class="spinner-container">Loading live data from Google Sheet...</div></td></tr></tbody>
+        </table>
+    </div>
+</main>
 <script>
-    let rawData = [];
+    const SPREADSHEET_ID = "1BnnnVgABrCViTLiYg2A3Qrj-lF13dIgcNvC_YX2RQm4"; 
+    const SHEET_NAME = "Main Data";
+    
+    const SUPERVISOR_MATRIX = {
+        "OPERATIONS": ["JAN PATRICK DAYO EVANGELISTA", "ROXANNE STREBEL FERNANDO", "RONNEL ESPINO GINGCO", "AREM IRISH MALLARI GONZALES", "NILO ANGELO OCAMPO VIADO", "JOSE MARI SAN JUAN HERNANDEZ", "VICTORIA NONETTE LIMPIN CARLOS"],
+        "SBG 2 HEAD / SERTA": ["SARAHBETH PUNDAN PAHATI", "VICTORIA NONETTE LIMPIN CARLOS"],
+        "THE WOW GROUP": ["JULIE ANN BERTIZ JALANDO-ON", "PRINCESS IGNACIO ARNALDO", "JAYSON ATIENZA JUAÑO", "JOSE MARI SAN JUAN HERNANDEZ"],
+        "SBG HEAD 2 / URATEX": ["VICTORIA NONETTE LIMPIN CARLOS", "JEROME ASUNCION ORE", "ALLAN JAMES PEREZ TORLA", "REYCARD NOVEN HERRERA ZABATE", "FERNANDO LAURON BENJAMIN", "VANESSA ENFESTA BENOSA", "CHRISTOPHER GULTIAN BERMUDO", "ALBERTO MIÑUZA CAÑETE", "JAY PADASAS DE LOS SANTOS", "JOHN MARTIN GARINGALAO DE VILLA", "MARK ANTHONY MACARAEG FERRER", "ROWENA JUMALON GUIRIGAY", "JOEMER DIMACALI LEDESMA", "CARLOS CALATIN MAHALIN", "CHITO CUENZA OBEÑA", "ALLAN PAUL BAUTISTA PATRON", "JANN SEO MAGBANUA PEPITO", "MARY ANN DACILLO RAMIREZ", "FILOMENO SAWIT RAMOS", "DOMINGO MAMURI SIMANGAN", "ADELZA DIVINAGRACIA SUCO", "ROSE MARIE MENDOZA TAN", "MONALIZA YAMBAO VALEROS"],
+        "SBG HEAD 2 / CCPI": ["JESSA CATONER ABENIR", "ROMEO MANUTA ACANTILADO", "JOSEPH SISON DELOS SANTOS", "FERNAND GUMAPAC DIGAMON", "ANNA MAE SUPERIORIDAD EDIANEL", "MARK FAGELA ENDITA", "GERVIE CERBITO ESPINOSA", "CARL BALMES FRANCISCO", "ROGEL DINGDING GETARUELAS", "MANUEL ERIC DISACULANGAN GONZALES", "PRINCESS TUNGUL MANANSALA", "MARCO MACASADDUG MOLINA", "ROSALINDA BETONGGA NIÑO", "JENIFFER CENTENO VICTORINO", "ELENA LOPEZ YBARRITA", "JOY MENDEZ BIAZON", "JOSE MARI SAN JUAN HERNANDEZ"],
+        "SBG HEAD 2 / DELFI": ["RAMEL ALALIM ANDO", "MEINRADO PASIA ARGUELLES", "MARIAN SALAMAT BALAN", "MELMAR UY BARDENAS", "MARY ANN ARANDIA BOLDERO", "ANABELLE CRAMPATANTA BOLIMA", "ELLINETTE JANE TRINIDAD BUSI", "JOHN EMMANUEL BONGATO CABALUNA", "ZEBEDEE PEREZ COLLADO", "ROSALINDA PALCON COSTELO", "SHEENA AREA OPERATIONS MANAGER", "JUVY BUENAFE DENIOLA", "ROMEO PACUL DOMINGO", "ALAIN SALINAS DONEZA", "JESTONI PALOMAR EPETIA", "IRENE SUVA FRANCO", "FRANKLIN ANCINO HILADO", "REYNALD ROVILLOS KOSCA", "RODOLFO RICARDO LEGASPI", "JESSIE EVANGELISTA MALIGAYA", "NENIT CLARITO MENDOZA", "MARK RUDOLPH MONTEMAYOR ORTIZ", "PETER QUINTOS QUINDOY", "JOHN PATRICK JUATCHON REYES", "GILBERT MAGBOJOS VIDAD", "ADJERICO NIÑO SUMAGUI MADRIAGA", "GLADYS GOLIAT DE GUZMAN", "JOSE MARI SAN JUAN HERNANDEZ"],
+        "SBG 1 / NUTRI-ASIA": ["EDGAR ROSALES NAMORO", "ARNEL MORALLOS ADTO", "MARK ANTHONY CARLON AGAPAY", "RYAN AFUERTO ALMAZAN", "MEL RYAN BAYLON ANDAYA", "KIM CHRISTIAN PADILLO ANGELES", "MARK ANTHONY SENAS BALATBAT", "ZANDRE CAPULSO BAYORAN", "FRANZ CJ PANCHO CANLAS", "ROEL JOHN CYRUS VILLANUEVA CASUGA", "MATEO BORDEOS CERNECHEZ", "CHRISTIAN RAY COLLADO", "ANTONIO SEGOVIA DELFIN", "ERWIN CABARLE EDORIA", "JAYSON ALAIBILLA FERALES", "REDEM CLAUNA FERNANDEZ", "JAY-AR VALIENTE GALAM", "RECLYM PUDE GERONIMO", "BUTCH AGAYO GRAGASIN", "MICHAEL JOHN ESTACIO GUTIERREZ", "HERBERT TOLENTINO JUNGCO", "JOEMIE MALABA LADRERA", "MARK JOSEPH HERNANDEZ MALABANAN", "FRITZ BRYAN CHAN MAMPORTE", "CARLITO MANUEL MATAGA", "SIRDAN MARIANO MILLAGRACIA", "JEROME LOU OMOLON MORON", "RICO IBARRETA NAMORO", "JOHN LESTER FRANCISCO OMIGAN", "RENZ KENARD PADUL PALAMING", "NIEL ALLEN FIGUEROA PANGILINAN", "WILLIAM VENTA PANGILINAN", "ARNEL VINO QUIZON", "RHIAN DEM ALCONES ROMULO", "MARVIN CARIAN RUMA", "ALJEM CHRISTIAN DUARTE", "VICTORIA NONETTE LIMPIN CARLOS"],
+        "HR / ADMIN / ACCOUNTING": ["CHRISTOPHER RUFO CANTOS", "ROMAN LAUGUILO DELA CRUZ", "MA. KRISTINE QUIMSON ENDAYA", "MARICEL FAJARDO LEGASPI", "TERESITA PASION LUMANIOG", "ELEAZAR DELA CERNA FAMORCAN", "GLENN LEUTERIO HERNANDEZ", "VICTORIA NONETTE LIMPIN CARLOS", "JOSE MARI SAN JUAN HERNANDEZ", "AREM IRISH MALLARI GONZALES", "NILO ANGEO OCAMPO VIADO"],
+        "C-JOY / BUSINESS DEVELOPMENT": ["BHALEMORE JAVILLO ESCANO", "NILO ANGELO OCAMPO VIADO"]
+    };
 
-    fetch('data.json')
-        .then(res => res.json())
-        .then(data => {
-            rawData = data;
+    let rawData = [];
+    const tsvUrl = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:tsv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+    fetch(tsvUrl)
+        .then(res => res.text())
+        .then(tsvText => {
+            let lines = tsvText.split('\n');
+            let counts = {};
+            let globalApplicantsSum = 0;
+            
+            lines.forEach((line, index) => {
+                if (index === 0) return; 
+                let columns = line.split('\t');
+                if (columns && columns[1]) {
+                    let name = columns[1].replace(/^"|"$/g, '').trim().toUpperCase();
+                    if (name !== "") {
+                        counts[name] = (counts[name] || 0) + 1;
+                        globalApplicantsSum++;
+                    }
+                }
+            });
+
+            let formattedDataset = [];
+            let activeSupervisorsCounter = 0;
+
+            for (let dept in SUPERVISOR_MATRIX) {
+                SUPERVISOR_MATRIX[dept].forEach(sup => {
+                    let matchingCount = counts[sup.toUpperCase()] || 0;
+                    if (matchingCount > 0) activeSupervisorsCounter++;
+                    formattedDataset.push({ "department": dept, "supervisor": sup, "count": matchingCount });
+                });
+            }
+
+            rawData = formattedDataset;
+            document.getElementById('total-supervisors-kpi').innerText = activeSupervisorsCounter;
+            document.getElementById('total-applicants-kpi').innerText = globalApplicantsSum;
             renderTable(rawData);
         })
         .catch(() => {
-            document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Failed to load data. Waiting for Google Sheets data update...</td></tr>';
+            document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger); padding: 30px; font-weight:600;">Failed to establish direct canvas link to Google Sheets. Please ensure your Spreadsheet is shared as "Anyone with the link".</td></tr>';
         });
 
     function renderTable(data) {
         const tbody = document.getElementById('table-body');
         tbody.innerHTML = '';
-        if(data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No matching records found.</td></tr>';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 30px; color: var(--text-muted);">No records found.</td></tr>';
             return;
         }
         data.forEach(item => {
-            const badgeClass = item.count > 0 ? 'count-active' : 'count-zero';
-            const row = `<tr>
-                <td><span class="badge-dept" title="${item.department}">${item.department}</span></td>
-                <td><strong>${item.supervisor}</strong></td>
-                <td style="text-align: center;"><span class="${badgeClass}">${item.count}</span></td>
+            const statusStyleClass = item.count > 0 ? 'count-active' : 'count-zero';
+            const rowElement = `<tr>
+                <td><span class="badge-dept">${item.department}</span></td>
+                <td><span class="supervisor-name">${item.supervisor}</span></td>
+                <td style="text-align: center;"><span class="counter-badge ${statusStyleClass}">${item.count}</span></td>
             </tr>`;
-            tbody.innerHTML += row;
+            tbody.innerHTML += rowElement;
         });
     }
 
     function filterData() {
         const searchTxt = document.getElementById('searchBar').value.toLowerCase();
         const deptVal = document.getElementById('deptFilter').value.toLowerCase();
-
         const filtered = rawData.filter(item => {
             const matchesSearch = item.supervisor.toLowerCase().includes(searchTxt);
             const matchesDept = item.department.toLowerCase().includes(deptVal);
