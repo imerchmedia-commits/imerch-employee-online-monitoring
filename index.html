@@ -12,13 +12,13 @@
         :root {
             --primary: #0f172a;       /* Dark Corporate Slate Blue */
             --primary-light: #1e293b; /* Accent Deep Blue */
-            --accent: #b45309;        /* Sophisticated Amber/Gold Accent */
+            --accent: #dc2626;        /* Corporate iMerch Red Accent */
             --bg-main: #f8fafc;       /* Ultra-clean Canvas Background */
             --card-bg: #ffffff;
             --text-dark: #334155;
             --text-muted: #64748b;
             --success: #059669;       /* Deep Luxury Green Badge */
-            --danger: #dc2626;        /* Clean Crimson Muted Red Badge */
+            --danger: #dc2626;        /* Crimson Red Badge */
             --border-color: #f1f5f9;
         }
 
@@ -34,14 +34,14 @@
             box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-bottom: 3px solid var(--accent);
         }
 
-        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
-        .navbar-brand span { color: #fbbf24; font-style: italic; font-weight: 400; }
+        .navbar-brand { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+        .navbar-brand span { color: #94a3b8; font-weight: 400; font-size: 14px; }
 
+        /* Realtime Clock Container Style */
         .live-status-indicator {
-            display: flex; align-items: center; gap: 8px; font-size: 12px;
-            text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
-            background: rgba(255,255,255,0.06); padding: 6px 14px; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; gap: 10px; font-size: 13px;
+            font-weight: 600; background: rgba(255,255,255,0.06); padding: 8px 16px; 
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-family: monospace;
         }
 
         .pulse-dot {
@@ -55,7 +55,39 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .main-content { max-width: 1200px; margin: 40px auto; padding: 0 24px; }
+        .main-content { max-width: 1200px; margin: 20px auto; padding: 0 24px; }
+
+        /* Logo Brand Dashboard Centerpiece Section */
+        .logo-centerpiece {
+            text-align: center;
+            margin: 30px 0;
+            padding: 10px;
+        }
+
+        .logo-centerpiece img {
+            max-width: 320px;
+            height: auto;
+            filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.05));
+        }
+
+        .dashboard-title {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            color: var(--primary);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .dashboard-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 0;
+            margin-bottom: 35px;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
 
         .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 35px; }
         .kpi-card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(148, 163, 184, 0.05); border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.25s ease; }
@@ -76,7 +108,7 @@
             box-sizing: border-box; transition: all 0.2s ease;
         }
 
-        input[type="text"]:focus, select:focus { outline: none; border-color: var(--accent); background-color: white; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.08); }
+        input[type="text"]:focus, select:focus { outline: none; border-color: #cbd5e1; background-color: white; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04); }
 
         .table-container { background: var(--card-bg); box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03); border-radius: 12px; overflow: hidden; border: 1px solid rgba(226, 232, 240, 0.8); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
@@ -95,11 +127,22 @@
 <body>
 
 <header class="top-navbar">
-    <div class="navbar-brand">iMerch <span>Corporate Dashboard</span></div>
-    <div class="live-status-indicator"><div class="pulse-dot"></div>Live Web App Sync</div>
+    <div class="navbar-brand">iMerch Media Inc. <span>Portal</span></div>
+    <!-- Realtime accurate timestamp layout location element -->
+    <div class="live-status-indicator">
+        <div class="pulse-dot"></div>
+        <span id="realtime-clock">Loading Clock...</span>
+    </div>
 </header>
 
 <main class="main-content">
+    <!-- Official Centerpiece Corporate Branding Section -->
+    <div class="logo-centerpiece">
+        <img src="logo.png" alt="iMerch Media Inc. Logo" onerror="this.src='https://github.io'">
+        <h2 class="dashboard-title">Employee Online Monitoring</h2>
+        <p class="dashboard-subtitle">Realtime Recruitment and Application Management System</p>
+    </div>
+
     <section class="analytics-grid">
         <div class="kpi-card"><h3 class="kpi-title">Active Supervisors</h3><p class="kpi-value" id="total-supervisors-kpi">-</p></div>
         <div class="kpi-card"><h3 class="kpi-title">Total Handled Candidates</h3><p class="kpi-value" id="total-applicants-kpi" style="color: var(--success);">-</p></div>
@@ -140,19 +183,34 @@
     </div>
 </main>
 <script>
-    // 🎯 JSONP GATEWAY LINK - Ito ang permanenteng lalaktaw sa CORS restrictions ng Google Cloud
     const WEB_APP_URL = "https://google.com"; 
-    
     let rawData = [];
+
+    // 🎯 ACCURATE REALTIME DATE AND TIME CLOCK SYSTEM
+    function updateClock() {
+        const now = new Date();
+        const options = { 
+            weekday: 'short', 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: true 
+        };
+        document.getElementById('realtime-clock').innerText = now.toLocaleString('en-US', options);
+    }
+    // Patakbuhin ang orasan bawat isang segundo (1000ms)
+    setInterval(updateClock, 1000);
+    updateClock();
 
     function loadDashboardData() {
         const script = document.createElement('script');
-        // Ipinapasa ang callback parameter sa URL para ma-trigger ang handleSheetResponse function
         script.src = `${WEB_APP_URL}?callback=handleSheetResponse`;
         document.body.appendChild(script);
     }
 
-    // Awtomatikong mag-e-execute kapag sumagot na ang Google Server App pipeline
     function handleSheetResponse(data) {
         rawData = data;
         
@@ -202,7 +260,6 @@
         renderTable(filtered);
     }
 
-    // Simulan ang auto-load sequence pagka-bukas ng pahina
     window.onload = loadDashboardData;
 </script>
 </body>
