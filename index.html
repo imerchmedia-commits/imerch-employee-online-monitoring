@@ -134,43 +134,43 @@
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa secure Google Web App API...</div></td></tr>
+                <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa secure Google Web App Deployment API...</div></td></tr>
             </tbody>
         </table>
     </div>
 </main>
 <script>
-    // 🎯 DIRECT GOOGLE CLOUD APP ENGINE ROUTE - Direkta na itong tatawag sa ginawa nating active deployment
+    // 🎯 SECURE JSONP CONTEXT BYPASSER - Gagamit ng dynamic script injection para basagin ang CORS blocking ng Google
     const WEB_APP_URL = "https://google.com"; 
     
     let rawData = [];
 
     function loadDashboardData() {
-        // Gumagamit ng standard fetch na sumusunod sa pinakabagong network protocols
-        fetch(WEB_APP_URL)
-            .then(res => res.json())
-            .then(data => {
-                rawData = data;
-                
-                let totalApplicantsSum = 0;
-                let activeSupervisorsCounter = 0;
-                let uniqueDepts = new Set();
-                
-                data.forEach(item => {
-                    totalApplicantsSum += item.count;
-                    if (item.count > 0) activeSupervisorsCounter++;
-                    if (item.department) uniqueDepts.add(item.department);
-                });
+        const script = document.createElement('script');
+        // Ipinapasa ang callback parameter para mag-trigger ang JavaScript output format
+        script.src = `${WEB_APP_URL}?callback=handleSheetResponse`;
+        document.body.appendChild(script);
+    }
 
-                document.getElementById('total-supervisors-kpi').innerText = activeSupervisorsCounter;
-                document.getElementById('total-applicants-kpi').innerText = totalApplicantsSum;
-                document.getElementById('total-departments-kpi').innerText = uniqueDepts.size > 0 ? uniqueDepts.size : 9;
+    // Awtomatikong tatakbo kapag sumagot na ang Google Server App pipeline
+    function handleSheetResponse(data) {
+        rawData = data;
+        
+        let totalApplicantsSum = 0;
+        let activeSupervisorsCounter = 0;
+        let uniqueDepts = new Set();
+        
+        data.forEach(item => {
+            totalApplicantsSum += item.count;
+            if (item.count > 0) activeSupervisorsCounter++;
+            if (item.department) uniqueDepts.add(item.department);
+        });
 
-                renderTable(rawData);
-            })
-            .catch(() => {
-                document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger); padding: 30px; font-weight:600;">Failed to establish direct secure connection to Google Web App API. Please check deployment settings or refresh the browser.</td></tr>';
-            });
+        document.getElementById('total-supervisors-kpi').innerText = activeSupervisorsCounter;
+        document.getElementById('total-applicants-kpi').innerText = totalApplicantsSum;
+        document.getElementById('total-departments-kpi').innerText = uniqueDepts.size > 0 ? uniqueDepts.size : 9;
+
+        renderTable(rawData);
     }
 
     function renderTable(data) {
