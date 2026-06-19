@@ -96,14 +96,14 @@
 
 <header class="top-navbar">
     <div class="navbar-brand">iMerch <span>Corporate Dashboard</span></div>
-    <div class="live-status-indicator"><div class="pulse-dot"></div>Live Realtime Sync</div>
+    <div class="live-status-indicator"><div class="pulse-dot"></div>Live Web App Sync</div>
 </header>
 
 <main class="main-content">
     <section class="analytics-grid">
         <div class="kpi-card"><h3 class="kpi-title">Active Supervisors</h3><p class="kpi-value" id="total-supervisors-kpi">-</p></div>
-        <div class="kpi-card"><h3 class="kpi-title">Total Handled Candidates</h3><p class="kpi-value" id="total-applicants-kpi" style="color: var(--success);">-</p></div>
-        <div class="kpi-card"><h3 class="kpi-title">Monitored Sectors</h3><p class="kpi-value" id="total-departments-kpi">-</p></div>
+        <div class="kpi-card"><h3 class="kpi-title">Total Active Candidates</h3><p class="kpi-value" id="total-applicants-kpi" style="color: var(--success);">-</p></div>
+        <div class="kpi-card"><h3 class="kpi-title">Monitored Groups</h3><p class="kpi-value" id="total-departments-kpi">-</p></div>
     </section>
 
     <div class="controls-card">
@@ -134,91 +134,44 @@
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa pampublikong Google Sheet database...</div></td></tr>
+                <tr><td colspan="3"><div class="spinner-container">Kumokonekta sa secure Google Web App Deployment API...</div></td></tr>
             </tbody>
         </table>
     </div>
 </main>
 <script>
-    const SPREADSHEET_ID = "1BnnnVgABrCViTLiYg2A3Qrj-lF13dIgcNvC_YX2RQm4"; 
-    let rawData = [];
+    // 🎯 INILAGAY NA ANG IYONG TUNAY AT AKTWAL NA WEB APP URL LINKS MULA SA GOOGLE SHEETS DEPLOYMENT
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzikYK5MnP2RjjtlhSihRxQGoCfzz-jMslrT8LFPWasbVYT5EP7CPrJCVp-tAHy8sgC/exec"; 
     
-    // 🎯 SMART PROXY ROUTE: Idadaan natin sa isang bypass network para basagin ang security blocker ng Google
-    const secureBaseUrl = `https://google.com{SPREADSHEET_ID}/export?format=csv`;
-    const proxyUrl = "https://allorigins.win" + encodeURIComponent(secureBaseUrl);
+    let rawData = [];
 
-    fetch(proxyUrl)
-        .then(res => res.text())
-        .then(csvText => {
-            let lines = csvText.split('\n');
-            let counts = {};
-            let supervisorToDeptMap = {}; 
-            let uniqueDepts = new Set();
-            let totalApplicantsCount = 0;
-            
-            let supervisorIndex = 34; // Auto-fallback configurations
-            let deptIndex = 3;        
+    // Gagamit ng JSONP formatting para ligtas sa CORS restrictions ng browser mo kailanman
+    function loadDataLive() {
+        const scriptElement = document.createElement('script');
+        scriptElement.src = `${WEB_APP_URL}?callback=handleSheetResponse`;
+        document.body.appendChild(scriptElement);
+    }
 
-            lines.forEach((line, index) => {
-                let columns = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim().toUpperCase());
-                
-                if (index === 0) {
-                    columns.forEach((colName, colIdx) => {
-                        if (colName.includes("SUPERVISOR") || colName.includes("COORDINATOR")) {
-                            supervisorIndex = colIdx;
-                        }
-                        if (colName.includes("ACCOUNT") || colName.includes("CLIENT") || colName.includes("DEPARTMENT")) {
-                            deptIndex = colIdx;
-                        }
-                    });
-                    return;
-                }
-                
-                if (columns.length > supervisorIndex) {
-                    let supervisor = columns[supervisorIndex];
-                    let dept = columns[deptIndex] ? columns[deptIndex] : "OPERATIONS";
-                    
-                    if (supervisor !== "" && supervisor !== "SUPERVISOR / COORDINATOR" && supervisor !== "N/A" && supervisor !== "NA") {
-                        
-                        if (dept.includes("CCPI")) dept = "SBG HEAD 2 / CCPI";
-                        else if (dept.includes("URATEX")) dept = "SBG HEAD 2 / URATEX";
-                        else if (dept.includes("WOW")) dept = "THE WOW GROUP";
-                        else if (dept.includes("SERTA")) dept = "SBG 2 HEAD / SERTA";
-                        else if (dept.includes("DELFI")) dept = "SBG HEAD 2 / DELFI";
-                        else if (dept.includes("NUTRI")) dept = "SBG 1 / NUTRI-ASIA";
-                        else if (dept.includes("HR") || dept.includes("ACCOUNTING") || dept.includes("ADMIN") || dept.includes("STAFF")) dept = "HR / ADMIN / ACCOUNTING";
-                        else if (dept.includes("JOY")) dept = "C-JOY / BUSINESS DEVELOPMENT";
-                        else dept = "OPERATIONS";
-
-                        counts[supervisor] = (counts[supervisor] || 0) + 1;
-                        supervisorToDeptMap[supervisor] = dept;
-                        uniqueDepts.add(dept);
-                        totalApplicantsCount++;
-                    }
-                }
-            });
-
-            let finalDataset = [];
-            for (let supervisor in counts) {
-                finalDataset.push({
-                    "department": supervisorToDeptMap[supervisor],
-                    "supervisor": supervisor,
-                    "count": counts[supervisor]
-                });
-            }
-
-            finalDataset.sort((a, b) => b.count - a.count);
-            rawData = finalDataset;
-            
-            document.getElementById('total-supervisors-kpi').innerText = Object.keys(counts).length;
-            document.getElementById('total-applicants-kpi').innerText = totalApplicantsCount;
-            document.getElementById('total-departments-kpi').innerText = uniqueDepts.size > 0 ? uniqueDepts.size : 9;
-
-            renderTable(rawData);
-        })
-        .catch(() => {
-            document.getElementById('table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--danger); padding: 30px; font-weight:600;">Failed to establish direct connection to Google Sheets. Please ensure your Spreadsheet is shared as "Anyone with the link".</td></tr>';
+    // Ang tatanggap at mag-e-execute ng data matrix array mula sa Google Sheet Web App mo
+    function handleSheetResponse(data) {
+        rawData = data;
+        
+        let totalApplicantsSum = 0;
+        let activeSupervisorsCounter = 0;
+        let uniqueDepts = new Set();
+        
+        data.forEach(item => {
+            totalApplicantsSum += item.count;
+            if (item.count > 0) activeSupervisorsCounter++;
+            if (item.department) uniqueDepts.add(item.department);
         });
+
+        document.getElementById('total-supervisors-kpi').innerText = activeSupervisorsCounter;
+        document.getElementById('total-applicants-kpi').innerText = totalApplicantsSum;
+        document.getElementById('total-departments-kpi').innerText = uniqueDepts.size > 0 ? uniqueDepts.size : 9;
+
+        renderTable(rawData);
+    }
 
     function renderTable(data) {
         const tbody = document.getElementById('table-body');
@@ -248,6 +201,9 @@
         });
         renderTable(filtered);
     }
+
+    // Simulan ang auto-load sequence pagka-bukas ng pahina
+    window.onload = loadDataLive;
 </script>
 </body>
 </html>
